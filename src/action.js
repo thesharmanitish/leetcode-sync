@@ -239,9 +239,9 @@ async function sync(inputs) {
   for (i = submissions.length - 1; i >= 0; i--) {
     submission = submissions[i];
     https://leetcode.com/problems/largest-color-value-in-a-directed-graph/description/?orderBy=most_votes
-    const response = await axios.get('https://leetcode.com/problems/'+submissions[i].title_slug+'description', config);
+    resp = await axios.get('https://leetcode.com/problems/'+submissions[i].title_slug+'description', config);
     log(`Successfully fetched submission from LeetCode, offset ${offset}`);
-    [treeSHA, latestCommitSHA] = await commit({ octokit, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, response, destinationFolder });
+    [treeSHA, latestCommitSHA] = await commit({ octokit, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, resp, destinationFolder });
     [treeSHA, latestCommitSHA] = await commit({ octokit, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, submission, destinationFolder });
   }
   log('Done syncing all submissions.');
