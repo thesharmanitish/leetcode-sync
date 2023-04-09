@@ -245,8 +245,8 @@ async function sync(inputs) {
     };  
   for (i = submissions.length - 1; i >= 0; i--) {
     submission = submissions[i];
-
-    resp = await axios.get('https://leetcode.com/problems/'+submissions[i].title_slug+'description', conf);
+    log(submissions[i].title_slug);
+    resp = await axios.get('https://leetcode.com/problems/'+submissions[i].title_slug+'/description', conf);
     log(`Successfully fetched problem from LeetCode, offset ${offset}`);
     [treeSHA, latestCommitSHA] = await commit({ octokit, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, resp, destinationFolder });
     [treeSHA, latestCommitSHA] = await commit({ octokit, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, submission, destinationFolder });
