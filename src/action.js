@@ -45,7 +45,8 @@ async function commit(params) {
     treeSHA,
     latestCommitSHA,
     submission,
-    destinationFolder
+    destinationFolder,
+    resp
   } = params;
 
   const name = normalizeName(submission.title);
@@ -57,12 +58,12 @@ async function commit(params) {
 
   const prefix = !!destinationFolder ? `${destinationFolder}/` : '';
   const path = `${prefix}problems/${name}/solution.${LANG_TO_EXTENSION[submission.lang]}`
-
+  let res = '#'+resp+'\n'+submission.code;
   const treeData = [
     {
       path,
       mode: '100644',
-      content: submission.code,
+      content: res,
     }
   ];
 
@@ -236,13 +237,43 @@ async function sync(inputs) {
   log(`Syncing ${submissions.length} submissions...`);
   let latestCommitSHA = commits.data[0].sha;
   let treeSHA = commits.data[0].commit.tree.sha;
+
   for (i = submissions.length - 1; i >= 0; i--) {
     submission = submissions[i];
-    https://leetcode.com/problems/largest-color-value-in-a-directed-graph/description/?orderBy=most_votes
-    const response = await axios.get('https://leetcode.com/problems/'+submissions[i].title_slug+'description', config);
-    log(`Successfully fetched submission from LeetCode, offset ${offset}`);
-    [treeSHA, latestCommitSHA] = await commit({ octokit, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, response, destinationFolder });
-    [treeSHA, latestCommitSHA] = await commit({ octokit, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, submission, destinationFolder });
+    let slug = submissions[i].title_slug;
+    log(submissions[i].title_slug);
+
+    let data = JSON.stringify({
+  "query": "\n    query questionContent($titleSlug: String!) {\n  question(titleSlug: $titleSlug) {\n    content\n    mysqlSchemas\n  }\n}\n    ",
+  "variables": {
+    "titleSlug": slug
+  },
+  "operationName": "questionContent"
+});
+let config = {
+  method: 'post',
+  maxBodyLength: Infinity,
+  url: 'https://leetcode.com/graphql/',
+  headers: { 
+    'Cookie': `csrftoken=${leetcodeCSRFToken};LEETCODE_SESSION=${leetcodeSession};`, 
+    'referer': 'https://leetcode.com/problems/', 
+    'Content-Type': 'application/json', 
+    'x-csrftoken': `${leetcodeCSRFToken}`, 
+    'origin': 'https://github.com'
+  },
+  data : data
+};
+    
+    axios.request(config)
+    .then((response) => {
+      
+      let resp = JSON.stringify(response.data);
+      commit({ octokit, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, submission, destinationFolder,resp });
+      log('Successfully fetched problem from LeetCode: \n'+resp);
+     });
+   
+    
+    
   }
   log('Done syncing all submissions.');
 }
