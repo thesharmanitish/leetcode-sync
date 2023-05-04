@@ -267,8 +267,8 @@ let config = {
     axios.request(config)
     .then((response) => {
       
-      let resp = JSON.stringify(response.data);
-      commit({ octokit, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, submission, destinationFolder,resp });
+      const resp = JSON.stringify(response.data);
+      await commit({ octokit, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, submission, destinationFolder,resp });
       log('Successfully fetched problem from LeetCode: \n'+resp);
      });
    
